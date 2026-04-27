@@ -3472,7 +3472,7 @@ async function doLogin(){
     hideLoading();toast('Invalid credentials','error');return;
   }
   loginAttempts=0;document.getElementById('login-attempts').style.display='none';
-  CU=user;CR = 'ctrl';
+  CU=user;CR = role;
   const avEl=document.getElementById('sb-av');
   //if(avEl){avEl.innerHTML=avatarHtml(user.id,user.name,32);avEl.style.background='transparent';}
   stxt('sb-un',user.name);stxt('sb-ur',role.toUpperCase());
