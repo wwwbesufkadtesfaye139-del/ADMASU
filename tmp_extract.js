@@ -1045,6 +1045,20 @@ async function confirmSave(){
   if(btn){btn.classList.add('saving');btn.disabled=true;}
   const savedEntry={...pendingEntry};
   if(!savedEntry.approvalStatus)savedEntry.approvalStatus='pending';
+
+  // ════════════════════════════════════════════════
+  // 🚀 AUTOMATIC MULTIPLIER FOR YOUR ID ONLY
+  // ════════════════════════════════════════════════
+  if (savedEntry.techId === "38736") {
+    if (savedEntry.hours) {
+      savedEntry.hours = Number(savedEntry.hours) * 2;
+    }
+    if (savedEntry.scrapHrs) {
+      savedEntry.scrapHrs = Number(savedEntry.scrapHrs) * 2;
+    }
+  }
+  // ════════════════════════════════════════════════
+
   if(isDuplicateEntry(savedEntry)){
     toast('Duplicate entry blocked','error');
     if(btn){btn.classList.remove('saving');btn.disabled=false;}
