@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="ProTrack MRO Production KPI System">
 <meta name="theme-color" content="#070c18">
-<title>ProTrack v1.3.0</title>
+<title>ProTrack v1.3.4</title>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -394,12 +394,16 @@ tbody tr:hover td{background:var(--card2);}
 .part-search-wrap .finput{padding-right:34px;}
 .part-search-clear{position:absolute;right:10px;top:10px;background:none;border:none;color:var(--tx3);cursor:pointer;font-size:14px;line-height:1;padding:0;display:none;}
 .part-search-clear:hover{color:var(--rose);}
-.part-search-list{display:none;margin-top:6px;max-height:240px;overflow-y:auto;background:var(--card);border:1px solid var(--bdr);border-radius:9px;box-shadow:0 10px 26px var(--shadow);position:relative;z-index:5;}
-.part-search-item{width:100%;display:block;text-align:left;background:none;border:none;border-bottom:1px solid var(--bdr);padding:10px 12px;cursor:pointer;color:var(--tx);font-family:inherit;transition:background .12s;}
+.part-search-list{display:none;position:absolute;left:0;right:0;top:calc(100% + 6px);max-height:280px;overflow-y:auto;background:var(--card);border:1px solid var(--bdr);border-radius:12px;box-shadow:0 16px 34px var(--shadow);z-index:35;}
+.part-search-item{width:100%;display:flex;flex-direction:column;align-items:stretch;text-align:left;background:none;border:none;border-bottom:1px solid var(--bdr);padding:12px 13px;cursor:pointer;color:var(--tx);font-family:inherit;transition:background .12s,border-color .12s;}
 .part-search-item:last-child{border-bottom:none;}
-.part-search-item:hover{background:var(--bdim);}
-.part-search-num{font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:700;color:var(--amber);}
-.part-search-meta{font-size:11px;color:var(--tx2);margin-top:2px;line-height:1.35;}
+.part-search-item:hover,.part-search-item.active{background:var(--bdim);}
+.part-search-item:focus{outline:none;background:var(--bdim);}
+.part-search-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.part-search-num{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;color:var(--amber);}
+.part-search-badge{font-size:10px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--blue);background:var(--bdim);padding:2px 7px;border-radius:99px;white-space:nowrap;}
+.part-search-meta{font-size:12px;color:var(--tx);margin-top:3px;line-height:1.35;font-weight:600;}
+.part-search-ata{font-size:10.5px;color:var(--tx2);margin-top:2px;font-family:'JetBrains Mono',monospace;}
 .part-search-sel{display:none!important;}
 .part-search-hint{font-size:10.5px;color:var(--tx3);margin-top:4px;}
 
@@ -562,7 +566,7 @@ tbody tr:hover td{background:var(--card2);}
                         <div class="part-search-list" id="e-part-list"></div>
                       </div>
                       <select class="fselect part-search-sel" id="e-part-sel" onchange="onPartSel()"><option value="">— Choose Part —</option></select>
-                      <div class="part-search-hint">Search first, then choose a part from the list.</div>
+                      <div class="part-search-hint">Search and click a result to confirm the part.</div>
                     </div>
                     <div class="fgroup"><label class="flabel">Description</label><input class="finput" id="e-desc" readonly></div>
                     <div class="fgroup"><label class="flabel">ATA Chapter</label><input class="finput" id="e-ata" readonly></div>
@@ -605,32 +609,34 @@ tbody tr:hover td{background:var(--card2);}
 
         <!-- TECH: MY STATS -->
         <div class="pg" id="pg-mystats">
-          <div class="tbr" style="margin-bottom:12px;gap:12px;flex-wrap:wrap;">
-            <div class="fgroup" style="max-width:240px;">
-              <label class="flabel">Month Filter</label>
-              <input type="month" class="finput" id="ms-month-filter" onchange="renderMyStats()">
+          <div class="tbr" style="margin-bottom:12px;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+            <div class="fgroup" style="max-width:200px;min-width:160px;">
+              <label class="flabel">From Date</label>
+              <input type="date" class="finput" id="ms-hist-from" onchange="document.getElementById('ms-dt-preset').value='';renderMyStats()">
             </div>
+            <div class="fgroup" style="max-width:200px;min-width:160px;">
+              <label class="flabel">To Date</label>
+              <input type="date" class="finput" id="ms-hist-to" onchange="document.getElementById('ms-dt-preset').value='';renderMyStats()">
+            </div>
+            <select class="fsel" id="ms-dt-preset" onchange="applyMyStatsPreset(this.value)" title="Quick range">
+              <option value="">Quick Range…</option>
+              <option value="today">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+              <option value="all">All Time</option>
+            </select>
+            <button class="btn bo bsm" onclick="renderMyStats()">⟳</button>
           </div>
-          <div class="kg k4" style="margin-bottom:5px;">
-            <div class="kc"><div class="kac" style="background:var(--blue)"></div><div class="kl">Today SDT</div><div class="kv" id="ms-today" style="color:var(--blue)">0Hrs</div><div class="kpb"><div class="kpb-bg"><div class="kpb-f" id="ms-t-pb" style="background:var(--blue);width:0%"></div></div><div class="kpb-s"><span id="ms-dt">Daily: —</span><span id="ms-dpc">0%</span></div></div></div>
-            <div class="kc"><div class="kac" style="background:var(--amber)"></div><div class="kl">This Week</div><div class="kv" id="ms-week" style="color:var(--amber)">0Hrs</div><div class="kpb"><div class="kpb-bg"><div class="kpb-f" id="ms-w-pb" style="background:var(--amber);width:0%"></div></div><div class="kpb-s"><span id="ms-wt">Weekly: —</span><span id="ms-wpc">0%</span></div></div></div>
-            <div class="kc"><div class="kac" style="background:var(--green)"></div><div class="kl">Total Achieved Hours</div><div class="kv" id="ms-month" style="color:var(--green)">0Hrs</div><div class="kpb"><div class="kpb-bg"><div class="kpb-f" id="ms-m-pb" style="background:var(--green);width:0%"></div></div><div class="kpb-s"><span id="ms-mt">Month: —</span><span id="ms-mpc">0%</span></div></div></div>
-          </div>
-          <div class="kg k2" style="margin-bottom:14px;">
-            <div class="kc"><div class="kac" style="background:var(--cyan)"></div><div class="kl">Additional Assignment Hrs (Month)</div><div class="kv" id="ms-asn" style="color:var(--cyan)">0Hrs</div><div class="ks">Add to total achieved hrs</div></div>
+          <div class="kg k4" style="margin-bottom:14px;">
+            <div class="kc"><div class="kac" style="background:var(--blue)"></div><div class="kl">Filtered SDT Hrs</div><div class="kv" id="ms-today" style="color:var(--blue)">0Hrs</div><div class="kpb"><div class="kpb-bg"><div class="kpb-f" id="ms-t-pb" style="background:var(--blue);width:0%"></div></div><div class="kpb-s"><span id="ms-dt">Range: —</span><span id="ms-dpc">0%</span></div></div></div>
+            <div class="kc"><div class="kac" style="background:var(--violet)"></div><div class="kl">Filtered Inspector Hrs</div><div class="kv" id="ms-week" style="color:var(--violet)">0Hrs</div><div class="kpb"><div class="kpb-bg"><div class="kpb-f" id="ms-w-pb" style="background:var(--violet);width:0%"></div></div><div class="kpb-s"><span id="ms-wt">Range: —</span><span id="ms-wpc">0%</span></div></div></div>
+            <div class="kc"><div class="kac" style="background:var(--green)"></div><div class="kl">Total Achieved Hours</div><div class="kv" id="ms-month" style="color:var(--green)">0Hrs</div><div class="kpb"><div class="kpb-bg"><div class="kpb-f" id="ms-m-pb" style="background:var(--green);width:0%"></div></div><div class="kpb-s"><span id="ms-mt">Range: —</span><span id="ms-mpc">0%</span></div></div></div>
+            <div class="kc"><div class="kac" style="background:var(--cyan)"></div><div class="kl">Additional Assignment Hrs</div><div class="kv" id="ms-asn" style="color:var(--cyan)">0Hrs</div><div class="ks">Filtered by selected date range</div></div>
           </div>
                     <div class="card">
             <div class="ch" style="align-items:flex-end;">
               <span class="ct">Production History</span>
               <div style="display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap;margin-left:auto;">
-                <div class="fgroup" style="min-width:150px;">
-                  <label class="flabel">From Date</label>
-                  <input type="date" class="finput" id="ms-hist-from" onchange="renderMyStats()">
-                </div>
-                <div class="fgroup" style="min-width:150px;">
-                  <label class="flabel">To Date</label>
-                  <input type="date" class="finput" id="ms-hist-to" onchange="renderMyStats()">
-                </div>
                 <div class="fgroup" style="min-width:160px;">
                   <label class="flabel">Status Filter</label>
                   <select class="fselect" id="ms-status-filter" onchange="renderMyStats()">
@@ -767,6 +773,9 @@ tbody tr:hover td{background:var(--card2);}
               <option value="all">All Time</option>
             </select>
             <button class="btn bo bsm" onclick="exportAllEntries()">⬇ CSV</button>
+            <button class="btn bg_ bsm" onclick="bulkAcceptAll()">✔ Accept All</button>
+            <button class="btn bd bsm" onclick="bulkRejectAll()">✖ Reject All</button>
+            <button class="btn bd bsm" onclick="bulkDeleteAll()">🗑 Delete All</button>
           </div>
           <div class="card"><div class="tw"><table>
             <thead> <tr><th>Date/Time (EAT)</th><th>Tech</th><th>Task Code</th><th>Role</th><th>Type</th><th>Part</th><th>ATA</th><th>Part #</th><th>Hrs (÷peers)</th><th>Status</th><th>Action</th></tr> </thead>
@@ -990,7 +999,32 @@ tbody tr:hover td{background:var(--card2);}
           </div>
         </div>
 
-        <!-- PRODUCTION CONTROLLER: TECHNICIAN ENTRY -->
+  
+      <!-- DEV/LEADER: PRODUCTION ENTRY IMPORT -->
+      <div class="pg" id="pg-productionimport">
+        <div class="al al-b"><span class="al-ico">⬆️</span><div>Import ComponentTATStatus Excel production entries. Entry date is taken from <strong>Date Completed</strong>. Entries are saved as <strong>Pending</strong>. Missing parts/employees show Add and Try Import buttons.</div></div>
+        <div class="card">
+          <div class="ch"><span class="ct">📥 Import Production Entries</span></div>
+          <div class="cb">
+            <div style="border:2px dashed var(--bdr2);border-radius:8px;padding:24px;text-align:center;cursor:pointer;" onclick="document.getElementById('imp-prod-f').click()">
+              📂 Upload ComponentTATStatus Excel
+              <input type="file" id="imp-prod-f" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleProductionImport(this)">
+            </div>
+            <div style="font-size:11.5px;color:var(--tx3);margin-top:8px;line-height:1.5;">
+              Uses: <span class="mono">WP ID</span>, <span class="mono">PART NAME</span>, <span class="mono">OEM P/N</span>, <span class="mono">Status</span>, <span class="mono">Date Completed</span>, <span class="mono">Released By</span>, <span class="mono">TECH_ID</span>, <span class="mono">UNDER_SUP</span>, <span class="mono">PRELIM_INSP</span>.<br>
+              Hours are fetched only from ProTrack Parts by <span class="mono">OEM P/N</span>. Excel <span class="mono">Est. Man Hr.</span> is ignored.
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ch"><span class="ct">Import Preview / Actions</span><button class="btn bo bsm" onclick="clearProductionImportPreview()">Clear Preview</button></div>
+          <div class="tw"><table>
+            <thead><tr><th>Row</th><th>Date Completed</th><th>Employee</th><th>Role</th><th>Task Code</th><th>Part #</th><th>Hours</th><th>Status / Action</th></tr></thead>
+            <tbody id="prod-import-body"><tr><td colspan="8" class="empty">No import yet</td></tr></tbody>
+          </table></div>
+        </div>
+      </div>
+      <!-- PRODUCTION CONTROLLER: TECHNICIAN ENTRY -->
         <div class="pg" id="pg-controllerentry">
           <div class="al al-b"><span class="al-ico">⊕</span><div>Submit a production entry on behalf of a technician. Choose the technician, fill in all fields, then Review &amp; Submit as the production controller.</div></div>
           <div style="display:grid;grid-template-columns:1.15fr 1fr;gap:14px;align-items:start;">
@@ -1026,7 +1060,7 @@ tbody tr:hover td{background:var(--card2);}
                         <div class="part-search-list" id="le-part-list"></div>
                       </div>
                       <select class="fselect part-search-sel" id="le-part-sel" onchange="onLePartSel()"><option value="">— Choose Part —</option></select>
-                      <div class="part-search-hint">Search first, then choose a part from the list.</div>
+                      <div class="part-search-hint">Search and click a result to confirm the part.</div>
                     </div>
                     <div class="fgroup"><label class="flabel">Description</label><input class="finput" id="le-desc" readonly></div>
                     <div class="fgroup"><label class="flabel">ATA Chapter</label><input class="finput" id="le-ata" readonly></div>
@@ -1105,7 +1139,7 @@ tbody tr:hover td{background:var(--card2);}
   <div class="modal msm">Change My Password
     <div class="mhd"><div class="mttl">Forgot Password</div><button class="mxb" onclick="closeModal('m-forgot')">✕</button></div>
     <div class="mbody">
-      <div class="al al-a"><span class="al-ico">💡</span><div>Contact your Developer/Admin to reset your password. Email:natnaelni@ethiopianairlines.com <a href="/cdn-cgi/l/" class="__cf_email__" data-cfemail="204e41544e41454c4e4960455448494f5049414e4149524c494e45530e434f4d">[email&#160;protected]</a></div></div>
+      <div class="al al-a"><span class="al-ico">💡</span><div>Contact your Developer/Admin to reset your password. Email:natnaelni@ethiopianairlines.com</div></div>
       <div style="margin-top:8px;">
         <div style="font-size:13px;font-weight:600;margin-bottom:8px;">Developer Recovery</div>
         <div class="fg">
@@ -1272,13 +1306,12 @@ tbody tr:hover td{background:var(--card2);}
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
 <script>
 'use strict';
 // ════════════════════════════════════════════════
 //  CONSTANTS & STATE
 // ════════════════════════════════════════════════
-const APP_VERSION = '1.3.0';
+const APP_VERSION = '1.3.4';
 const DEV_RECOVERY_CODE = 'PROTRACK-DEV-2025-RESET';
 const EAT_TZ='Africa/Addis_Ababa';
 const ROLES=['Technician','Under Supervision','Inspector','Preliminary Inspector'];
@@ -1311,6 +1344,13 @@ let loginAttempts=0;
 let pendingEntry=null;
 let lastImportedTechs=[];
 let lastImportedParts=[];
+
+// ════════════════════════════════════════════════
+//  PRODUCTION IMPORT PERSISTENCE
+// ════════════════════════════════════════════════
+const PROD_IMPORT_STORAGE_KEY='pt-production-import-state-v1';
+function saveProductionImportState(){try{localStorage.setItem(PROD_IMPORT_STORAGE_KEY,JSON.stringify({results:productionImportResults,pendingRows:productionImportPendingRows,ignoredIds:productionImportIgnoredIds,keySeq:productionImportKeySeq}));}catch(e){}}
+function loadProductionImportState(){try{const raw=localStorage.getItem(PROD_IMPORT_STORAGE_KEY);if(!raw)return;const data=JSON.parse(raw);if(Array.isArray(data?.results))productionImportResults=data.results;productionImportPendingRows=(data?.pendingRows&&typeof data.pendingRows==='object')?data.pendingRows:{};productionImportIgnoredIds=Array.isArray(data?.ignoredIds)?data.ignoredIds.map(v=>String(v).trim().toUpperCase()).filter(Boolean):[];productionImportKeySeq=Number.isFinite(Number(data?.keySeq))?Number(data.keySeq):productionImportKeySeq;}catch(e){}}
 
 // ════════════════════════════════════════════════
 //  THEME
@@ -1415,6 +1455,38 @@ function getMonthRangeFromInput(v){
   const label=new Date(Date.UTC(yy,mm-1,1)).toLocaleDateString('en-GB',{month:'long',year:'numeric',timeZone:'UTC'});
   return {start,end,label};
 }
+function getMyStatsRange(){
+  const preset=(document.getElementById('ms-dt-preset')?.value||'').trim();
+  const fromEl=document.getElementById('ms-hist-from');
+  const toEl=document.getElementById('ms-hist-to');
+  let from=(fromEl?.value||'').trim();
+  let to=(toEl?.value||'').trim();
+  if(preset==='all'&&!from&&!to){
+    return {start:'0000-01-01',end:'9999-12-31',label:'All Time'};
+  }
+  if(!from&&!to){
+    const mr=getMR();
+    if(fromEl)fromEl.value=mr.start;
+    if(toEl)toEl.value=mr.end;
+    return {...mr,label:'This Month'};
+  }
+  let start=from||'0000-01-01';
+  let end=to||'9999-12-31';
+  if(start>end){const tmp=start;start=end;end=tmp;}
+  const label=(start==='0000-01-01'&&end==='9999-12-31')?'All Time':`${start} → ${end}`;
+  return {start,end,label};
+}
+function applyMyStatsPreset(v){
+  const today=todayEAT(),wr=getWR(),mr=getMR();
+  const fromEl=document.getElementById('ms-hist-from'),toEl=document.getElementById('ms-hist-to');
+  if(!fromEl||!toEl)return;
+  if(v==='today'){fromEl.value=today;toEl.value=today;}
+  else if(v==='week'){fromEl.value=wr.start;toEl.value=wr.end;}
+  else if(v==='month'||!v){fromEl.value=mr.start;toEl.value=mr.end;}
+  else if(v==='all'){fromEl.value='';toEl.value='';}
+  renderMyStats();
+}
+window.applyMyStatsPreset=applyMyStatsPreset;
 function dateInRange(iso,start,end){const d=(iso||'').slice(0,10);return !!d&&d>=start&&d<=end;}
 function getDailyTgt(m){return parseFloat((m/22).toFixed(2));}
 function getWeeklyTgt(m){return parseFloat((getDailyTgt(m)*5).toFixed(2));}
@@ -2013,7 +2085,7 @@ function setPartPickerDisplay(prefix, part){
   const input=document.getElementById(`${prefix}-part-search`);
   const list=document.getElementById(`${prefix}-part-list`);
   const clearBtn=document.getElementById(`${prefix}-part-clear`);
-  if(input)input.value=part?`${part.num} — ${part.name}`:'';
+  if(input)input.value=part?`${part.num || part.id || ''} — ${part.name || ''}`:'';
   if(list){list.innerHTML='';list.style.display='none';}
   if(clearBtn)clearBtn.style.display=part?'block':'none';
 }
@@ -2036,18 +2108,20 @@ function filterPartSearch(prefix){
   if(!list)return;
   if(!q){list.style.display='none';list.innerHTML='';return;}
   const matches=parts.filter(p=>partMatchText(p).includes(q)).slice(0,24);
-  list.innerHTML=matches.length?matches.map(p=>`
-    <button type="button" class="part-search-item" data-id="${escapeHtml(p.id)}" onclick="selectPartFromSearch('${prefix}', this.dataset.id)">
-      <div class="part-search-num">${escapeHtml(p.num||'—')} · ${escapeHtml(p.hours ?? '—')}h</div>
-      <div class="part-search-meta">${escapeHtml(p.name||'—')}<br>${escapeHtml(p.ata||'—')}</div>
+  const activeId=selectedPartsByPrefix[prefix]?.id ? String(selectedPartsByPrefix[prefix].id) : '';
+  list.innerHTML=matches.length?matches.map(p=>{
+    const id=String(p.id);
+    return `
+    <button type="button" class="part-search-item${id===activeId?' active':''}" data-id="${escapeHtml(p.id)}" onclick="selectPartFromSearch('${prefix}', this.dataset.id)">
+      <div class="part-search-top">
+        <div class="part-search-num">${escapeHtml(p.num||'—')}</div>
+        <div class="part-search-badge">${escapeHtml((p.hours ?? '—'))} Hrs</div>
+      </div>
+      <div class="part-search-meta">${escapeHtml(p.name||'—')}</div>
+      <div class="part-search-ata">ATA ${escapeHtml(p.ata||'—')}</div>
     </button>
-  `).join(''):'<div style="padding:10px 12px;font-size:12px;color:var(--tx3);">No matching parts</div>';
+  `;}).join(''):'<div style="padding:12px 13px;font-size:12px;color:var(--tx3);">No matching parts</div>';
   list.style.display='block';
-
-  const chosen=resolvePartSelection(prefix,q);
-  if(chosen){
-    applyPartSelection(prefix, chosen);
-  }
 }
 function selectPartFromSearch(prefix, partId){
   const part=findPartById(partId);
@@ -2055,6 +2129,7 @@ function selectPartFromSearch(prefix, partId){
   applyPartSelection(prefix, part);
   if(prefix==='e') refreshAllocHrs();
   else if(prefix==='le') refreshLeAllocHrs();
+  toast(`Selected: ${part.num || part.id} — ${part.name || 'Part'}`,'success');
 }
 function clearPartSearch(prefix){
   const input=document.getElementById(`${prefix}-part-search`);
@@ -2076,19 +2151,16 @@ document.addEventListener('click',function(e){
   }
 });
 document.addEventListener('keydown',function(e){
-  if(e.key!=='Enter') return;
   const active=document.activeElement;
   if(!active || !active.id || !active.id.includes('-part-search')) return;
-  const prefix=active.id.startsWith('le-')?'le':'e';
-  const part=bestPartFromQuery(active.value);
-  if(part){
+  if(e.key==='Enter'){
     e.preventDefault();
-    applyPartSelection(prefix, part);
-    if(prefix==='e') onPartSel(); else onLePartSel();
+    return;
   }
 });
 
 function renderEntry(){
+  if(CR==='tech'){navTo('mystats');return;}
   if(CR==='tech'&&CU){applyRoleAccessToButtons('e',CU);ensureAllowedRole('e',CU);if(jobType==='scrap'){forcePickRole('e','Inspector',2);}}
   const today=todayEAT(),wr=getWR();
   const me=entries.filter(e=>e.techId===CU.id);
@@ -2236,37 +2308,35 @@ function renderMyStats(){
   if(!CU) return;
   const me=entries.filter(e=>e.techId===CU.id);
   const statusFilter=(document.getElementById('ms-status-filter')?.value||'all').toLowerCase();
-  const mrSel=getMonthRangeFromInput(document.getElementById('ms-month-filter')?.value);
-  const today=todayEAT(),wr=getWR();
+  const range=getMyStatsRange();
   const mt=CU.monthlyTarget||160;
-  const dt=getDailyTgt(mt),wt=getWeeklyTgt(mt);
   const approvedMe=me.filter(isApprovedEntry);
-  const visibleMe=me.filter(e=>statusFilter==='all' || getEntryStatus(e)===statusFilter);
-  const todaySDT=approvedMe.filter(e=>e.time?.startsWith(today)&&isSDT(e)).reduce((s,e)=>s+getDividedHours(e,entries),0);
-  const weekSDT=approvedMe.filter(e=>dateInRange(e.time,wr.start,wr.end)&&isSDT(e)).reduce((s,e)=>s+getDividedHours(e,entries),0);
-  const monthSDT=approvedMe.filter(e=>dateInRange(e.time,mrSel.start,mrSel.end)&&isSDT(e)).reduce((s,e)=>s+getDividedHours(e,entries),0);
-  const asnHrs=assignments.filter(a=>a.techId===CU.id&&a.date>=mrSel.start&&a.date<=mrSel.end).reduce((s,a)=>s+(a.hrs||0),0);
-  const inspHrs=approvedMe.filter(e=>dateInRange(e.time,mrSel.start,mrSel.end)&&!isSDT(e)).reduce((s,e)=>s+getDividedHours(e,entries),0);
-  const totalAchieved=monthSDT+asnHrs+inspHrs;
+  const approvedInRange=approvedMe.filter(e=>dateInRange(e.time,range.start,range.end));
+  const visibleMe=me.filter(e=>dateInRange(e.time,range.start,range.end)&&(statusFilter==='all' || getEntryStatus(e)===statusFilter));
 
-  stxt('ms-today',todaySDT.toFixed(2)+'Hrs');
-  stxt('ms-week',weekSDT.toFixed(2)+'Hrs');
+  const filteredSDT=approvedInRange.filter(isSDT).reduce((s,e)=>s+getDividedHours(e,entries),0);
+  const filteredInspector=approvedInRange.filter(e=>!isSDT(e)).reduce((s,e)=>s+getDividedHours(e,entries),0);
+  const asnHrs=assignments.filter(a=>a.techId===CU.id&&a.date>=range.start&&a.date<=range.end).reduce((s,a)=>s+(a.hrs||0),0);
+  const totalAchieved=filteredSDT+filteredInspector+asnHrs;
+
+  stxt('ms-today',filteredSDT.toFixed(2)+'Hrs');
+  stxt('ms-week',filteredInspector.toFixed(2)+'Hrs');
   stxt('ms-month',totalAchieved.toFixed(2)+'Hrs');
   stxt('ms-asn',asnHrs.toFixed(2)+'Hrs');
-  stxt('ms-dt',`Daily: ${dt.toFixed(1)}Hrs`);
-  stxt('ms-wt',`Weekly: ${wt.toFixed(1)}Hrs`);
-  stxt('ms-mt',`Month: ${mrSel.label}`);
+  stxt('ms-dt',`Range: ${range.label}`);
+  stxt('ms-wt',`Range: ${range.label}`);
+  stxt('ms-mt',`Range: ${range.label}`);
 
-  pb('ms-t-pb',todaySDT,dt);
-  pb('ms-w-pb',weekSDT,wt);
+  pb('ms-t-pb',filteredSDT,mt);
+  pb('ms-w-pb',filteredInspector,mt);
   pb('ms-m-pb',totalAchieved,mt);
 
-  const dpc = dt > 0 ? Math.round((todaySDT / dt) * 100) : 0;
-  const wpc = wt > 0 ? Math.round((weekSDT / wt) * 100) : 0;
-  const mpc = mt > 0 ? Math.round((totalAchieved / mt) * 100) : 0;
-  stxt('ms-dpc',dpc+'%');
-  stxt('ms-wpc',wpc+'%');
-  stxt('ms-mpc',mpc+'%');
+  const sdtPct = mt > 0 ? Math.round((filteredSDT / mt) * 100) : 0;
+  const inspPct = mt > 0 ? Math.round((filteredInspector / mt) * 100) : 0;
+  const totalPct = mt > 0 ? Math.round((totalAchieved / mt) * 100) : 0;
+  stxt('ms-dpc',sdtPct+'%');
+  stxt('ms-wpc',inspPct+'%');
+  stxt('ms-mpc',totalPct+'%');
 
   const tbody=document.getElementById('ms-hist');
   if(tbody){
@@ -2274,7 +2344,7 @@ function renderMyStats(){
       const div=getDividedHours(e,entries),insp=!isSDT(e);
       const rc=ROLE_COLORS[ROLES.indexOf(e.jobRole||'Technician')]||'var(--blue)';
       const st=getEntryStatus(e);
-      const rowStyle=st==='rejected'?'background:rgba(244,63,94,.08);border-left:3px solid var(--rose);':'';
+      const rowStyle=st==='rejected'?'background:rgba(244,63,94,.08);border-left:3px solid var(--rose);':(st==='pending'?'background:rgba(245,158,11,.06);':'');
       return`<tr style="${rowStyle}"><td class="mono">${fmtEAT(e.time,'date')}</td><td class="mono" style="color:var(--blue);">${e.taskCode||'—'}</td>
       <td style="font-size:11px;font-weight:700;color:${rc}">${e.jobRole||'Tech'}</td>
       <td>${e.pname}</td><td class="mono">${e.ata||'—'}</td><td class="mono">${e.pnum||'—'}</td>
@@ -2286,7 +2356,7 @@ function renderMyStats(){
 
   const al=document.getElementById('ms-asn-list');
   if(al){
-    const list=assignments.filter(a=>a.techId===CU.id&&a.date>=mrSel.start&&a.date<=mrSel.end);
+    const list=assignments.filter(a=>a.techId===CU.id&&a.date>=range.start&&a.date<=range.end);
     al.innerHTML=list.length?list.sort((a,b)=>new Date(b.date||0)-new Date(a.date||0)).map(a=>`
       <div class="asn-card">
         <div class="asn-hd"><div style="width:24px;height:24px;border-radius:50%;overflow:hidden;">${avatarHtml(a.techId,a.techName,24)}</div><span class="asn-nm">${sanitize(a.desc)}</span></div>
@@ -2381,20 +2451,25 @@ window.renderLB=renderLB;
 
 
 
+
+
+
 function buildLeaderboardExportPanel(stats,rangeHint=getUIRange('dash')){
   const sorted=[...stats]
-    .map(t=>({...t,pct:t.tgt?Math.round((t.total/t.tgt)*100):0}))
-    .sort((a,b)=>b.pct-a.pct);
+    .map(t=>({
+      ...t,
+      pct:t.tgt?Math.round((t.total/t.tgt)*100):0,
+      
+    }))
+    .sort((a,b)=>b.pct-a.pct||b.total-a.total);
 
-  const maxPct = Math.max(150, ...sorted.map(t => t.pct || 0));
-  const chartH = 560;
-  const plotH = 360;
-  const scaleMax = Math.ceil(maxPct / 10) * 10 || 100;
-  const rulerStep = scaleMax >= 200 ? 20 : 10;
-  const rulerTicks = [];
-  for(let v=0; v<=scaleMax; v+=rulerStep){ rulerTicks.push(v); }
-  if(!rulerTicks.includes(100)) rulerTicks.push(100);
-  rulerTicks.sort((a,b)=>a-b);
+  const perPage=10;
+  const pages=[];
+  for(let i=0;i<sorted.length;i+=perPage){
+    pages.push(sorted.slice(i,i+perPage));
+  }
+  if(!pages.length) pages.push([]);
+  const pageMax = Math.max(100, ...sorted.map(t => Number(t.pct || 0)), 1);
 
   const monthLabel = (() => {
     try{
@@ -2406,131 +2481,160 @@ function buildLeaderboardExportPanel(stats,rangeHint=getUIRange('dash')){
     }
   })();
 
+  const escapeHtml = (val) => String(val ?? '')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+
+  function exportAvatar(uid,name,size,col){
+    const pic=getUserPhoto(uid);
+    const ini=(name||'?').split(' ').filter(Boolean).map(w=>w[0]).join('').slice(0,2).toUpperCase() || '?';
+    const safePic=String(pic||'').replace(/'/g,'%27');
+    const avatarCore = pic
+      ? `<div style="width:${size}px;height:${size}px;border-radius:50%;overflow:hidden;border:6px solid ${col};background:#fff;box-shadow:0 3px 10px rgba(15,23,42,.10);flex-shrink:0;">
+           <img src="${safePic}" alt="${escapeHtml(ini)}" style="width:100%;height:100%;display:block;object-fit:cover;object-position:center center;border-radius:50%;background:#fff;" crossorigin="anonymous">
+         </div>`
+      : `<div style="width:${size}px;height:${size}px;border-radius:50%;border:4px solid ${col};background:${AV_COLORS[(String(uid||'').charCodeAt(0)||0)%AV_COLORS.length]};color:#fff;display:flex;align-items:center;justify-content:center;font-size:${Math.max(30, Math.round(size*0.40))}px;font-weight:900;box-shadow:0 3px 10px rgba(15,23,42,.10);flex-shrink:0;">
+           ${escapeHtml(ini)}
+         </div>`;
+    return `
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0;">
+        ${avatarCore}
+      </div>`;
+  }
+
+  const pageStyle = `
+    width:1600px;
+    min-height:860px;
+    box-sizing:border-box;
+    background:#f0f4f8;
+    color:#0f172a;
+    border:1px solid #dbe3ee;
+    border-radius:18px;
+    overflow:hidden;
+    page-break-after:always;
+    display:flex;
+    flex-direction:column;
+    box-shadow:0 2px 10px rgba(15,23,42,.05);
+  `;
+
   const panel = document.createElement('div');
   panel.id = 'lb-export-panel';
   panel.style.position = 'fixed';
   panel.style.left = '-99999px';
   panel.style.top = '0';
-  const panelW = Math.max(1280, 180 + (sorted.length * 92));
-  panel.style.width = panelW + 'px';
-  panel.style.height = '1080px';
-  panel.style.minWidth = panelW + 'px';
-  panel.style.background = '#f0f4f8';
+  panel.style.width = '1600px';
+  panel.style.background = 'transparent';
   panel.style.color = '#0f172a';
-  panel.style.border = '1px solid #e2e8f0';
   panel.style.fontFamily = "'Plus Jakarta Sans', sans-serif";
   panel.style.boxSizing = 'border-box';
+  panel.style.padding = '0';
+  panel.style.display = 'flex';
+  panel.style.flexDirection = 'column';
+  panel.style.gap = '24px';
 
-  function exportAvatar(uid,name,size,col){
-    const pic=getUserPhoto(uid);
-    const ini=(name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    const safePic=String(pic||'').replace(/'/g,'%27');
-    if(pic){
-      return `
-        <div style="width:${size}px;height:${size}px;border-radius:50%;overflow:hidden;border:4px solid ${col};background:#fff;box-shadow:0 2px 8px rgba(15,23,42,.10);flex-shrink:0;">
-          <img src="${safePic}" alt="${ini}" style="width:100%;height:100%;display:block;object-fit:cover;object-position:center center;border-radius:50%;background:#fff;" crossorigin="anonymous">
-        </div>`;
-    }
-    const idx=(uid||'').charCodeAt(0)%AV_COLORS.length||0;
-    return `
-      <div style="width:${size}px;height:${size}px;border-radius:50%;border:4px solid ${col};background:${AV_COLORS[idx]};color:#fff;display:flex;align-items:center;justify-content:center;font-size:${Math.max(18, Math.round(size*0.30))}px;font-weight:900;box-shadow:0 2px 8px rgba(15,23,42,.10);flex-shrink:0;">
-        ${ini}
-      </div>`;
-  }
+  pages.forEach((page, pageIndex)=>{
+    const totalPages = pages.length;
+        const pageEl = document.createElement('div');
+    pageEl.className = 'lb-export-page';
+    pageEl.style.cssText = pageStyle;
 
-  panel.innerHTML = `
-    <div style="background:#c1121f;color:#fff;padding:20px 28px 16px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
-      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0;">
-        <div style="font-size:40px;font-weight:800;letter-spacing:-1px;line-height:1;">Monthly Productivity Report</div>
-        <div style="font-size:24px;font-weight:900;letter-spacing:1px;line-height:1;text-transform:uppercase;">${monthLabel}</div>
-      </div>
-      <div style="font-size:14px;font-weight:700;opacity:.95;text-align:right;">VERTICAL GRAPH • SORTED BY %</div>
-    </div>
-
-    <div style="padding:12px 28px 8px;display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:14px;font-weight:700;">
-      <div style="color:#64748b;font-weight:600;">All active technicians arranged by achievement percentage and total hours.</div>
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
-        <span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;background:#10b981;display:inline-block;border-radius:2px;"></span>≥100%</span>
-        <span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;background:#f59e0b;display:inline-block;border-radius:2px;"></span>70–99%</span>
-        <span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;background:#f43f5e;display:inline-block;border-radius:2px;"></span>&lt;70%</span>
-      </div>
-    </div>
-
-    <div style="position:relative;padding:6px 22px 22px;">
-      <div style="position:relative;height:${chartH}px;background:#fff;border:1px solid #dbe3ee;border-radius:18px;box-shadow:0 2px 10px rgba(15,23,42,.05);overflow:hidden;padding:18px 16px 18px 84px;box-sizing:border-box;">
-        <div style="position:absolute;left:22px;top:18px;bottom:18px;width:44px;border-right:2px solid #94a3b8;">
-          ${rulerTicks.map(v=>{
-            const y = 18 + ((scaleMax - v) / scaleMax) * (chartH - 36);
-            const major = (v===0 || v===100 || v===scaleMax);
-            const tickW = major ? 18 : 10;
-            return `
-              <div style="position:absolute;left:0;right:0;top:${y}px;transform:translateY(-50%);height:1px;">
-                <div style="position:absolute;right:0;top:50%;transform:translateY(-50%);width:${tickW}px;height:2px;background:${major ? '#334155' : '#cbd5e1'};"></div>
-                <div style="position:absolute;left:0;top:50%;transform:translateY(-50%);font-size:${major ? '11px' : '10px'};font-weight:${major ? '900' : '700'};color:${major ? '#0f172a' : '#64748b'};line-height:1;">${v}%</div>
-              </div>`;
-          }).join('')}
+    pageEl.innerHTML = `
+      <div style="background:#c1121f;color:#fff;padding:20px 28px 16px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-shrink:0;">
+        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0;">
+          <div style="font-size:54px;font-weight:900;letter-spacing:-1.4px;line-height:1;">Monthly Productivity Report</div>
+          <div style="font-size:32px;font-weight:900;letter-spacing:1.2px;line-height:1;text-transform:uppercase;">${escapeHtml(monthLabel)}</div>
         </div>
+        <div style="font-size:20px;font-weight:800;opacity:.98;text-align:right;">
+          PAGE ${pageIndex + 1} OF ${totalPages}<br>
+          HORIZONTAL LEADERBOARD
+        </div>
+      </div>
 
-        <div style="position:absolute;left:66px;right:12px;top:18px;bottom:66px;display:grid;grid-template-columns:repeat(${sorted.length}, minmax(34px, 1fr));gap:4px;align-items:end;">
-          ${sorted.map((t)=>{
-            const pct=t.pct;
+      <div style="padding:16px 32px 14px;display:flex;justify-content:space-between;align-items:center;gap:14px;font-size:18px;font-weight:700;flex-shrink:0;">
+        <div style="color:#64748b;font-weight:600;">Ranked by achievement percentage.</div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
+          <span style="display:inline-flex;align-items:center;gap:8px;"><span style="width:18px;height:18px;background:#10b981;display:inline-block;border-radius:2px;"></span>≥100%</span>
+          <span style="display:inline-flex;align-items:center;gap:8px;"><span style="width:18px;height:18px;background:#f59e0b;display:inline-block;border-radius:2px;"></span>70–99%</span>
+          <span style="display:inline-flex;align-items:center;gap:8px;"><span style="width:18px;height:18px;background:#f43f5e;display:inline-block;border-radius:2px;"></span>&lt;70%</span>
+        </div>
+      </div>
+
+      <div style="padding:8px 24px 22px;flex:1;display:flex;flex-direction:column;min-height:0;">
+        <div style="display:flex;align-items:flex-end;gap:18px;flex:1;min-height:0;padding:14px 8px 0;overflow:hidden;">
+          ${page.map((t, idx)=>{
+            const pct=t.pct||0;
             const col=pct>=100?'#10b981':pct>=70?'#f59e0b':'#f43f5e';
-            const fill=Math.max(8, Math.round((pct/scaleMax)*plotH));
-            const avatarSize = 62;
+            const fill=Math.max(8, Math.min(100, pct));
+            const barH=Math.max(26, Math.round((pct / pageMax) * 300));
+            const safeName=escapeHtml(t.name);
+            const safeId=escapeHtml(t.id);
             return `
-              <div style="position:relative;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:8px;min-width:0;padding:2px 0 0;">
-                <div style="position:absolute;left:50%;transform:translateX(-50%);bottom:${Math.max(0, fill + 8)}px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;z-index:2;pointer-events:none;">
-                  <div style="font-size:18px;font-weight:900;color:${col};line-height:1;white-space:nowrap;text-align:center;">${pct}%</div>
-                  <div style="font-size:15px;font-weight:900;color:#475569;line-height:1;white-space:nowrap;text-align:center;">${Number(t.total||0).toFixed(1)}Hrs</div>
-                  ${exportAvatar(t.id,t.name,avatarSize,col)}
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;">
+                <div style="text-align:center;line-height:1.1;margin-bottom:12px;min-height:64px;display:flex;flex-direction:column;justify-content:flex-end;">
+                  <div style="font-size:26px;font-weight:900;color:${col};">${pct}%</div>
+                  <div style="font-size:18px;font-weight:800;color:#0f172a;">${Number(t.total||0).toFixed(1)}Hrs</div>
                 </div>
-
-                <div style="position:relative;width:100%;height:${plotH}px;display:flex;align-items:flex-end;justify-content:center;overflow:visible;">
-                  <div style="position:relative;width:22px;height:${fill}px;background:linear-gradient(180deg, ${col}, ${col});border-radius:999px;box-shadow:0 2px 6px rgba(15,23,42,.12);"></div>
+                <div style="margin-bottom:10px;display:flex;justify-content:center;flex-direction:column;align-items:center;gap:8px;">
+                  ${exportAvatar(t.id,t.name,96,col)}
                 </div>
-              </div>
-            `;
-          }).join('')}        </div>
-
-        <div style="position:absolute;left:66px;right:12px;bottom:14px;height:40px;display:grid;grid-template-columns:repeat(${sorted.length}, minmax(34px, 1fr));gap:6px;align-items:center;">
-          ${sorted.map((t)=>{
-            const safeId = String(t.id||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-            return `
-              <div style="display:flex;align-items:center;justify-content:center;min-width:0;padding:0 4px;">
-                <div style="display:inline-flex;align-items:center;justify-content:center;min-width:72px;max-width:100%;padding:5px 8px;border-radius:999px;background:#0f172a;border:1px solid #334155;font-size:10.5px;font-weight:900;color:#fff;line-height:1;white-space:nowrap;overflow:visible;box-shadow:0 2px 8px rgba(15,23,42,.14);letter-spacing:.25px;">${safeId}</div>
+                <div style="width:30px;height:${barH}px;background:${col};border-radius:999px;box-shadow:0 1px 2px rgba(15,23,42,.15);"></div>
+                <div style="margin-top:14px;display:flex;flex-direction:column;align-items:center;gap:6px;min-height:48px;">
+                  <div style="background:#111827;color:#fff;border-radius:999px;padding:7px 16px;font-size:18px;font-weight:800;font-family:'JetBrains Mono',monospace;white-space:nowrap;">${safeId}</div>
+                </div>
               </div>
             `;
           }).join('')}
+          ${!page.length ? `<div style="flex:1;text-align:center;color:#64748b;font-size:18px;font-weight:700;background:#fff;border:1px dashed #dbe3ee;border-radius:14px;padding:48px 16px;">No data</div>` : ''}
         </div>
       </div>
-    </div>
-  `;
+
+      <div style="padding:10px 28px 16px;border-top:1px solid #dbe3ee;display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:11px;color:#64748b;flex-shrink:0;">
+        <div>Generated from the current leaderboard view.</div>
+        <div style="font-family:'JetBrains Mono',monospace;">${escapeHtml(todayEAT())}</div>
+      </div>
+    `;
+    panel.appendChild(pageEl);
+  });
+
   return panel;
 }
 async function exportLeaderboard(panelId,format='image'){
   if(!window.html2canvas){toast('Export library not loaded','error');return;}
   const range=getUIRange('dash');
-  const stats=getLeaderboardStats(range).map(t=>({...t,pct:t.tgt?Math.round((t.total/t.tgt)*100):0})).sort((a,b)=>b.pct-a.pct);
+  const stats=getLeaderboardStats(range).map(t=>({
+    ...t,
+    pct:t.tgt?Math.round((t.total/t.tgt)*100):0
+  })).sort((a,b)=>b.pct-a.pct||b.total-a.total);
+
   const exportPanel=buildLeaderboardExportPanel(stats,range);
   document.body.appendChild(exportPanel);
+
   try{
-    const canvas=await html2canvas(exportPanel,{scale:2,backgroundColor:'#f0f4f8',useCORS:true});
     const safeDate=todayEAT();
     if(format==='pdf'){
-      const imgData=canvas.toDataURL('image/png');
       const { jsPDF } = window.jspdf || {};
       if(!jsPDF) throw new Error('jsPDF missing');
       const pdf=new jsPDF('l','mm','a4');
-      const pageW=pdf.internal.pageSize.getWidth();
-      const pageH=pdf.internal.pageSize.getHeight();
-      const ratio=Math.min((pageW-12)/canvas.width,(pageH-12)/canvas.height);
-      const imgW=canvas.width*ratio;
-      const imgH=canvas.height*ratio;
-      const x=(pageW-imgW)/2;
-      const y=(pageH-imgH)/2;
-      pdf.addImage(imgData,'PNG',x,y,imgW,imgH);
+      const pages=[...exportPanel.querySelectorAll('.lb-export-page')];
+      for(let i=0;i<pages.length;i++){
+        const pageCanvas=await html2canvas(pages[i],{scale:2,backgroundColor:'#f0f4f8',useCORS:true});
+        const imgData=pageCanvas.toDataURL('image/png');
+        const pageW=pdf.internal.pageSize.getWidth();
+        const pageH=pdf.internal.pageSize.getHeight();
+        const ratio=Math.min((pageW-10)/pageCanvas.width,(pageH-10)/pageCanvas.height);
+        const imgW=pageCanvas.width*ratio;
+        const imgH=pageCanvas.height*ratio;
+        const x=(pageW-imgW)/2;
+        const y=(pageH-imgH)/2;
+        if(i>0) pdf.addPage();
+        pdf.addImage(imgData,'PNG',x,y,imgW,imgH);
+      }
       pdf.save(`leaderboard_${safeDate}.pdf`);
     }else{
+      const canvas=await html2canvas(exportPanel,{scale:2,backgroundColor:'#f0f4f8',useCORS:true});
       const link=document.createElement('a');
       link.href=canvas.toDataURL('image/png');
       link.download=`leaderboard_${safeDate}.png`;
@@ -2715,7 +2819,7 @@ window.delEntryById=async function(id){
 };
 window.delEntry=window.delEntryById;
 
-function renderAllEntries(){
+function getAllEntriesFiltered(){
   const tf=document.getElementById('ae-tech')?.value||'';
   const sf=document.getElementById('ae-st')?.value||'all';
   const fromV=document.getElementById('ae-dt-from')?.value||'';
@@ -2727,6 +2831,53 @@ function renderAllEntries(){
   if(fromV)f=f.filter(e=>e.time&&e.time.slice(0,10)>=fromV);
   if(toV)f=f.filter(e=>e.time&&e.time.slice(0,10)<=toV);
   if(q)f=f.filter(e=>(e.techName+e.pname+e.taskCode+e.pnum).toLowerCase().includes(q));
+  return f;
+}
+
+async function bulkApplyToFiltered(mode){
+  if(!canManageEntriesUI()){toast('Not allowed','error');return;}
+  const filtered=getAllEntriesFiltered();
+  if(!filtered.length){toast('No filtered entries to update','warn');return;}
+  const label=mode==='accepted'?'accept':mode==='rejected'?'reject':'delete';
+  if(!confirm(`Are you sure you want to ${label} ${filtered.length} filtered entr${filtered.length===1?'y':'ies'}?`))return;
+  showLoading(`${label.charAt(0).toUpperCase()+label.slice(1)}ing ${filtered.length} filtered entr${filtered.length===1?'y':'ies'}...`);
+  let done=0, failed=0;
+  try{
+    for(const e of filtered){
+      try{
+        if(mode==='delete'){
+          await window.deleteDoc(window.doc(window.db,'entries',e.id));
+          entries=entries.filter(x=>x.id!==e.id);
+        }else{
+          const u={...e,approvalStatus:mode,reviewedBy:CU?.name||'',reviewedById:CU?.id||'',reviewedAt:todayEAT()};
+          await window.setDoc(window.doc(window.db,'entries',e.id),u);
+          const idx=entries.findIndex(x=>x.id===e.id);
+          if(idx>-1)entries[idx]=u;
+        }
+        done++;
+      }catch(err){
+        failed++;
+        console.error(err);
+      }
+    }
+    renderEntry();
+    renderLeaderEntry();
+    renderAllEntries();
+    renderReports();
+    renderTG();
+    renderLB();
+    toast((label.charAt(0).toUpperCase()+label.slice(1))+' complete: '+done+' done'+(failed?(', '+failed+' failed'):''));
+  }finally{
+    hideLoading();
+  }
+}
+window.bulkApplyToFiltered=bulkApplyToFiltered;
+window.bulkAcceptAll=async function(){return bulkApplyToFiltered('accepted');};
+window.bulkRejectAll=async function(){return bulkApplyToFiltered('rejected');};
+window.bulkDeleteAll=async function(){return bulkApplyToFiltered('delete');};
+
+function renderAllEntries(){
+  const f=getAllEntriesFiltered();
   const tbody=document.getElementById('ae-body');
   if(tbody){tbody.innerHTML=f.slice(0,200).map(e=>{
     const div=getDividedHours(e,entries),insp=!isSDT(e);
@@ -3163,8 +3314,217 @@ window.handlePartImport=function(input){const f=input.files[0];if(!f)return;cons
 // ════════════════════════════════════════════════
 //  EXPORT HELPERS
 // ════════════════════════════════════════════════
+
+// ════════════════════════════════════════════════
+// DEV/LEADER: PRODUCTION ENTRY IMPORT
+// Date comes from Date Completed. Missing part/employee rows get Add + Try Import buttons.
+// ════════════════════════════════════════════════
+let productionImportResults=[];
+let productionImportPendingRows={};
+let productionImportIgnoredIds=[];
+let productionImportKeySeq=0;
+loadProductionImportState();
+function getImportValue(row, keys){
+  if(!row||!keys)return '';
+  const lookup={};
+  Object.keys(row).forEach(k=>lookup[String(k).trim().toLowerCase()]=row[k]);
+  for(const k of keys){
+    const v=lookup[String(k).trim().toLowerCase()];
+    if(v!==undefined&&v!==null&&String(v).trim()!=='')return v;
+  }
+  return '';
+}
+function getUnderSupImportValue(row){
+  // Prefer AJ exactly, then official labels, then blank-header fallbacks.
+  const direct = getImportValue(row,['AJ','Under Supervision','UNDER_SUP','UNDER SUP','UNDER SUPERVISION','UNDER_SUPERVISION','UNDER SUPERVISION ID','UNDER_SUP_ID']);
+  if(String(direct ?? '').trim() !== '') return direct;
+
+  const keys = Object.keys(row || {});
+  for(const k of keys){
+    const kk = String(k).trim().toUpperCase();
+    if(kk !== 'AJ' && !/^__EMPTY/i.test(kk) && !/^UNNAMED:/i.test(kk)) continue;
+    const v = String(row[k] ?? '').trim();
+    if(!v) continue;
+    if(/^\d{3,8}(\s*,\s*\d{3,8})*$/.test(v)) return v;
+  }
+  return '';
+}
+function normalizeImportDate(value){
+  try{
+    if(value instanceof Date && !isNaN(value)) return value.toISOString().slice(0,10);
+    if(typeof value==='number' && isFinite(value)){
+      const d=new Date(Math.round((value-25569)*86400*1000));
+      if(!isNaN(d)) return d.toISOString().slice(0,10);
+    }
+    const s=String(value ?? '').trim();
+    if(!s) return '';
+    const d=new Date(s);
+    if(!isNaN(d)) return d.toISOString().slice(0,10);
+    const m=s.match(/(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+    if(m) return `${m[1]}-${String(m[2]).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}`;
+  }catch(e){}
+  return '';
+}
+function splitImportIds(value){
+  const raw=String(value ?? '').trim();
+  if(!raw) return [];
+  return raw.split(/[;,\/\|]+/).map(s=>String(s).trim()).filter(Boolean);
+}
+function normalizeImportStatus(value){
+  const s=String(value ?? '').trim().toUpperCase();
+  if(s==='RFI') return 'completed';
+  if(s==='SCRAP') return 'scrap';
+  if(s==='CMPLT AS U/S' || s.includes('CMPLT') || s.includes('U/S')) return 'completed';
+  return 'unsupported';
+}
+function normalizePartNumberForImport(v){
+  return String(v ?? '').trim().toUpperCase().replace(/[\s\-—–_]+/g,'').replace(/[^A-Z0-9]/g,'');
+}
+function findPartByNumber(partNumber){
+  const target=normalizePartNumberForImport(partNumber);
+  if(!target) return null;
+  return parts.find(p=>normalizePartNumberForImport(p.num||p.partNumber||p.id)===target) || null;
+}
+function isFooterImportRow(row){
+  const wp=String(getImportValue(row,['WP ID','WPID','Task Code','TaskCode']) ?? '').trim();
+  if(!wp) return true;
+  const low=wp.toLowerCase();
+  return low.includes('average') || low.includes('total count') || low.includes('total est') || low.includes('total act') || low.startsWith('total ');
+}
+function normalizeIgnoredImportId(v){return String(v??'').trim().toUpperCase();}
+function isIgnoredImportId(v){const id=normalizeIgnoredImportId(v);return !!id && productionImportIgnoredIds.includes(id);}
+function addIgnoredImportId(v){const id=normalizeIgnoredImportId(v);if(!id)return false;if(!productionImportIgnoredIds.includes(id)){productionImportIgnoredIds.push(id);saveProductionImportState();return true;}return false;}
+
+function ensureImportChoiceModal(){
+  let host=document.getElementById('import-choice-overlay');
+  if(host) return host;
+  host=document.createElement('div');
+  host.id='import-choice-overlay';
+  host.style.cssText='position:fixed;inset:0;z-index:10050;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.72);backdrop-filter:blur(3px);padding:18px;';
+  host.innerHTML=`<div style="width:min(640px,96vw);background:var(--card);border:1px solid var(--bdr);border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.45);overflow:hidden;">
+    <div style="padding:18px 20px;border-bottom:1px solid var(--bdr);font-weight:800;font-size:16px;" id="import-choice-title"></div>
+    <div style="padding:14px 20px 8px;color:var(--tx2);font-size:14px;line-height:1.55;" id="import-choice-msg"></div>
+    <div style="padding:12px 20px 20px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center;" id="import-choice-actions"></div>
+  </div>`;
+  document.body.appendChild(host);
+  host.addEventListener('click',e=>{if(e.target===host){const cancel=host._cancel; if(typeof cancel==='function') cancel();}});
+  return host;
+}
+function askImportChoice({title,message,buttons}){
+  const host=ensureImportChoiceModal();
+  const t=host.querySelector('#import-choice-title');
+  const m=host.querySelector('#import-choice-msg');
+  const a=host.querySelector('#import-choice-actions');
+  t.textContent=title||'Choose an action';
+  m.textContent=message||'';
+  a.innerHTML='';
+  host.style.display='flex';
+  return new Promise(resolve=>{
+    const done=(val)=>{host.style.display='none'; host._cancel=null; resolve(val);};
+    host._cancel=()=>done(null);
+    (buttons||[]).forEach(btn=>{
+      const b=document.createElement('button');
+      b.className='btn '+(btn.variant||'bo');
+      b.style.minWidth='120px';
+      b.style.padding='10px 14px';
+      b.style.fontSize='13px';
+      b.type='button';
+      b.textContent=btn.label;
+      b.onclick=()=>done(btn.value);
+      a.appendChild(b);
+    });
+  });
+}
+async function chooseImportIds(ids,role,taskCode){
+  if(!ids||!ids.length) return [];
+  if(ids.length===1) return ids;
+  const choice = await askImportChoice({
+    title:`Multiple ${role} IDs found`,
+    message:`WP ${taskCode} has more than one ${role} ID. Click one button to continue.`,
+    buttons:[
+      ...ids.map(id=>({label:id,value:id,variant:'bp'})),
+      {label:'All',value:'ALL',variant:'bg_'},
+      {label:'Skip',value:'SKIP',variant:'bo'},
+      {label:'Cancel import',value:'CANCEL',variant:'bd'}
+    ]
+  });
+  if(choice===null || choice==='CANCEL') return null;
+  if(choice==='SKIP') return [];
+  if(choice==='ALL') return ids;
+  return [choice];
+}
+function importSafe(v){return String(v??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,' ');}
+function addImportResult(r){productionImportResults.push(r);saveProductionImportState();}
+function openImportAddPart(partNumber='',partName=''){openAddPart();setTimeout(()=>{sv('mp-num',String(partNumber||''));sv('mp-name',String(partName||''));sv('mp-hours','');sv('mp-ata','');},80);}
+function openImportAddEmployee(id='',role='Technician'){openAddTech();setTimeout(()=>{sv('mt-id',String(id||''));sv('mt-name','Imported Employee '+String(id||''));sv('mt-target',settings.defaultMonthlyTarget||160);sv('mt-pwd',settings.passwords?.tech||'demo');const st=document.getElementById('mt-status');if(st)st.value='active';const ra=document.getElementById('mt-role-access');if(ra)ra.value=(role==='Technician')?'tech':'tech_insp';const us=document.getElementById('mt-unsup');if(us)us.checked=false;},80);}
+function makeImportPendingKey(row,rowIndex){const key='p'+(++productionImportKeySeq);productionImportPendingRows[key]={row,rowIndex};saveProductionImportState();return key;}
+function addImportMissingPart(partNumber,partName,rowNum,taskCode,row,rowIndex,date){const key=makeImportPendingKey(row,rowIndex);addImportResult({key,row:rowNum,date:date||'—',employee:'—',role:'—',taskCode,partNumber,hours:'—',status:'Part not found. Add part, enter correct hours, save, then click Try Import.',type:'warn',action:'part',partNumber,partName});}
+async function resolveImportEmployee(id,role,rowNum,taskCode,partNumber,row,rowIndex,date){
+  const rawId=String(id??'').trim();
+  const idKey=normalizeIgnoredImportId(rawId);
+  if(!rawId)return null;
+  if(isIgnoredImportId(idKey)) return null;
+  const tech=techs.find(t=>String(t.id).trim()===rawId);
+  if(tech)return tech;
+  const choice=await askImportChoice({
+    title:`Employee not found for ${role}`,
+    message:`Employee ID ${rawId} was not found for ${role}. Choose one action below.`,
+    buttons:[
+      {label:'Add employee now',value:'ADD',variant:'bp'},
+      {label:'Ignore this ID',value:'IGNORE_ONCE',variant:'bo'},
+      {label:'Ignore this ID always',value:'IGNORE_ALWAYS',variant:'bg_'},
+      {label:'Cancel import',value:'CANCEL',variant:'bd'}
+    ]
+  });
+  if(choice===null||choice==='CANCEL')return'CANCEL_IMPORT';
+  if(choice==='IGNORE_ALWAYS'){
+    addIgnoredImportId(idKey);
+    toast(`Ignored ${rawId} for future imports`,'warn');
+    return null;
+  }
+  if(choice==='ADD'){
+    const key=makeImportPendingKey(row,rowIndex);
+    openImportAddEmployee(rawId,role);
+    addImportResult({key,row:rowNum,date:date||'—',employee:rawId,role,taskCode,partNumber,hours:'—',status:'Employee not found. Add employee, save, then click Try Import.',type:'warn',action:'tech',employeeId:rawId,employeeRole:role});
+    return'ADD_REQUIRED';
+  }
+  return null;
+}
+
+async function buildImportEntriesForRow(row,rowIndex){
+  const rowNum=rowIndex+2;if(isFooterImportRow(row))return[];
+  const taskCode=String(getImportValue(row,['WP ID','WPID','Task Code','TaskCode'])||'').trim().toUpperCase();
+  const partName=String(getImportValue(row,['PART NAME','Part Name','Description'])||'').trim();
+  const partNumber=String(getImportValue(row,['OEM P/N','OEM PN','OEM_PN','Part Number','P/N'])||'').trim();
+  const statusVal=getImportValue(row,['Status','STATUS']);const jobType=normalizeImportStatus(statusVal);
+  const date=normalizeImportDate(getImportValue(row,['Date Completed','DATE COMPLETED','Completed Date']));
+  if(!taskCode)return[];
+  if(!date){addImportResult({row:rowNum,date:'—',employee:'—',role:'—',taskCode,partNumber,hours:'—',status:'Error: Date Completed is missing/invalid',type:'error'});return[];}
+  if(jobType==='unsupported')return[]; // ignored totally: no preview row
+  const part=findPartByNumber(partNumber);if(!part){addImportMissingPart(partNumber,partName,rowNum,taskCode,row,rowIndex,date);return[];}
+  const roleFields=[{role:'Technician',keys:['TECH_ID','TECH ID','Tech ID','Technician ID']},{role:'Under Supervision',keys:['UNDER_SUP','UNDER SUP','UNDER-SUP','UNDERSUPERVISION','UNDER SUPERVISION']},{role:'Inspector',keys:['Released By','RELEASED BY','ReleasedBy']},{role:'Preliminary Inspector',keys:['PRELIM_INSP','PRELIM INSP','PRELIM-INSP','PRELIMINARY ROLE','PRELIMINARY_ROLE']}];
+  const out=[];
+  for(const rf of roleFields){let ids=splitImportIds(rf.role==='Under Supervision'?getUnderSupImportValue(row):getImportValue(row,rf.keys));ids=await chooseImportIds(ids,rf.role,taskCode);if(ids===null)return'CANCEL_IMPORT';for(const id of ids){const tech=await resolveImportEmployee(id,rf.role,rowNum,taskCode,part.num,row,rowIndex,date);if(tech==='CANCEL_IMPORT')return'CANCEL_IMPORT';if(!tech||tech==='ADD_REQUIRED')continue;const hrs=calcPoolHrs(part,rf.role,taskCode);out.push({techId:tech.id,techName:tech.name,pname:part.name,pnum:part.num,taskCode,jobRole:rf.role,jobType,time:date,hours:hrs,stdHours:part.hours,isInspector:rf.role==='Inspector'||rf.role==='Preliminary Inspector',ata:part.ata||'',desc:part.name,scrapHrs:jobType==='scrap'&&rf.role==='Inspector'?(settings.scrapDefaultHrs||2):null,approvalStatus:'pending',submittedBy:CU?.name||'Import User',submittedByRole:CR||'import',imported:true,importedSource:'ComponentTATStatus',importedAt:new Date().toISOString(),_preview:{row:rowNum,date,employee:`${tech.name} (${tech.id})`,role:rf.role,taskCode,partNumber:part.num,hours:hrs}});}}
+  return out;
+}
+async function saveImportEntries(built,rowIndexForErr=0){let saved=0,errors=0;if(!built||!built.length)return{saved,errors};for(const entry of built){try{const prev=entry._preview||{};delete entry._preview;if(isDuplicateEntry(entry)){continue;}const ref=await window.addDoc(window.collection(window.db,'entries'),entry);entry.id=ref.id;entries.unshift(entry);saved++;addImportResult({...prev,status:'Saved as pending',type:'success'});}catch(err){errors++;addImportResult({row:rowIndexForErr+2,date:entry.time||'—',employee:entry.techId||'—',role:entry.jobRole||'—',taskCode:entry.taskCode||'—',partNumber:entry.pnum||'—',hours:'—',status:'Save error: '+(err.message||err),type:'error'});}}return{saved,errors};}
+async function retryProductionImportRow(key){const p=productionImportPendingRows[key];if(!p){toast('Retry data not found','error');return;}productionImportResults=productionImportResults.filter(r=>r.key!==key);saveProductionImportState();const built=buildImportEntriesForRow(p.row,p.rowIndex);if(built==='CANCEL_IMPORT'){toast('Retry cancelled','warn');renderProductionImportPreview();return;}const res=await saveImportEntries(built,p.rowIndex);if(res.saved>0)delete productionImportPendingRows[key];saveProductionImportState();renderProductionImportPreview();if(typeof renderAllEntries==='function')renderAllEntries();if(typeof renderTG==='function')renderTG();if(typeof renderReports==='function')renderReports();if(typeof renderLB==='function')renderLB();toast(`Try import complete: ${res.saved} saved, ${res.errors} errors`);}
+function renderProductionImportPreview(results=productionImportResults){const body=document.getElementById('prod-import-body');if(!body)return;body.dataset.hasImport='1';if(!results.length){body.innerHTML='<tr><td colspan="8" class="empty">No import results</td></tr>';return;}const cls=t=>t==='success'?'bgr':t==='error'?'bred':t==='duplicate'?'bgray':t==='info'?'bblu':'bamb';body.innerHTML=results.map(r=>{let action='';if(r.action==='part')action=` <button class="btn bp bsm" onclick="openImportAddPart('${importSafe(r.partNumber)}','${importSafe(r.partName)}')">+ Add Part</button> <button class="btn bg_ bsm" onclick="retryProductionImportRow('${r.key}')">↻ Try Import</button>`;if(r.action==='tech')action=` <button class="btn bp bsm" onclick="openImportAddEmployee('${importSafe(r.employeeId)}','${importSafe(r.employeeRole)}')">+ Add Employee</button> <button class="btn bg_ bsm" onclick="retryProductionImportRow('${r.key}')">↻ Try Import</button>`;return`<tr><td class="mono">${sanitize(String(r.row??''))}</td><td class="mono">${sanitize(String(r.date??'—'))}</td><td>${sanitize(String(r.employee??'—'))}</td><td>${sanitize(String(r.role??'—'))}</td><td class="mono" style="color:var(--blue);">${sanitize(String(r.taskCode??'—'))}</td><td class="mono" style="color:var(--amber);">${sanitize(String(r.partNumber??'—'))}</td><td class="mono">${r.hours!==undefined&&r.hours!=='—'?sanitizeNum(r.hours).toFixed(2)+'h':'—'}</td><td><span class="bdg ${cls(r.type)}">${sanitize(String(r.status??''))}</span>${action}</td></tr>`;}).join('');}
+function clearProductionImportPreview(){productionImportResults=[];productionImportPendingRows={};productionImportKeySeq=0;saveProductionImportState();const body=document.getElementById('prod-import-body');if(body){delete body.dataset.hasImport;body.innerHTML='<tr><td colspan="8" class="empty">No import yet</td></tr>';}}
+function renderProductionImportPage(){const body=document.getElementById('prod-import-body');if(!body)return;if(productionImportResults.length)renderProductionImportPreview();else if(!body.dataset.hasImport)body.innerHTML='<tr><td colspan="8" class="empty">No import yet</td></tr>';}
+async function handleProductionImport(input){const file=input?.files?.[0];if(!file)return;let saved=0,skipped=0,errors=0;showLoading('Importing production Excel...');try{const buf=await file.arrayBuffer();const wb=XLSX.read(buf,{type:'array'});const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});for(let i=0;i<rows.length;i++){const row=rows[i];if(isFooterImportRow(row))continue;const built=await buildImportEntriesForRow(row,i);if(built==='CANCEL_IMPORT'){break;}if(!built||!built.length){skipped++;continue;}const res=await saveImportEntries(built,i);saved+=res.saved;errors+=res.errors;}}catch(err){errors++;addImportResult({row:'—',date:'—',employee:'—',role:'—',taskCode:'—',partNumber:'—',hours:'—',status:'Import failed: '+(err.message||err),type:'error'});}finally{renderProductionImportPreview();if(typeof renderAllEntries==='function')renderAllEntries();if(typeof renderTG==='function')renderTG();if(typeof renderReports==='function')renderReports();if(typeof renderLB==='function')renderLB();toast(`Production import complete: ${saved} saved, ${skipped} ignored, ${errors} errors`);if(input)input.value='';hideLoading();}}
+window.handleProductionImport=handleProductionImport;window.renderProductionImportPage=renderProductionImportPage;window.renderProductionImportPreview=renderProductionImportPreview;window.clearProductionImportPreview=clearProductionImportPreview;window.openImportAddPart=openImportAddPart;window.openImportAddEmployee=openImportAddEmployee;window.retryProductionImportRow=retryProductionImportRow;
+
 function dlFile(c,fn,t){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:t}));a.download=fn;a.click();URL.revokeObjectURL(a.href);}
-window.exportMine=function(){let csv='Date(EAT),TaskCode,Role,Type,Part,ATA,PartNum,Hrs(÷peers),Status\n';entries.filter(e=>e.techId===CU.id&&isApprovedEntry(e)).forEach(e=>{const d=getDividedHours(e,entries);csv+=`"${fmtEAT(e.time,'date')}","${e.taskCode||''}","${e.jobRole||''}","${e.jobType||'completed'}","${e.pname}","${e.ata||''}","${e.pnum}",${d.toFixed(3)},"${getEntryStatus(e)}"\n`;});dlFile(csv,'my_production_'+todayEAT()+'.csv','text/csv');toast('Exported');};
+window.exportMine=function(){
+  const range=getMyStatsRange();
+  const statusFilter=(document.getElementById('ms-status-filter')?.value||'all').toLowerCase();
+  let csv='Date(EAT),TaskCode,Role,Type,Part,ATA,PartNum,Hrs(÷peers),Status\n';
+  entries
+    .filter(e=>e.techId===CU.id&&dateInRange(e.time,range.start,range.end)&&(statusFilter==='all'||getEntryStatus(e)===statusFilter))
+    .forEach(e=>{const d=getDividedHours(e,entries);csv+=`"${fmtEAT(e.time,'date')}","${e.taskCode||''}","${e.jobRole||''}","${e.jobType||'completed'}","${e.pname}","${e.ata||''}","${e.pnum}",${d.toFixed(3)},"${getEntryStatus(e)}"\n`;});
+  dlFile(csv,'my_production_'+todayEAT()+'.csv','text/csv');toast('Exported');
+};
 window.exportAllEntries=function(){let csv='Date(EAT),Tech,TechID,TaskCode,Role,Type,Part,ATA,PartNum,Hrs(÷peers),HoursType\n';entries.forEach(e=>{const d=getDividedHours(e,entries),ht=isSDT(e)?'SDT':'NOT_SDT';csv+=`"${fmtEAT(e.time,'date')}","${e.techName}","${e.techId}","${e.taskCode||''}","${e.jobRole||''}","${e.jobType||'completed'}","${e.pname}","${e.ata||''}","${e.pnum}",${d.toFixed(3)},${ht}\n`;});dlFile(csv,'all_entries_'+todayEAT()+'.csv','text/csv');toast('Exported');};
 
 // ════════════════════════════════════════════════
@@ -3363,10 +3723,10 @@ window.clearLeEntry=clearLeEntry;
 //  NAVIGATION
 // ════════════════════════════════════════════════
 const NAV={
-  tech:['entry','mystats','taskgroups'],
-  lead:['dashboard','controllerentry','assignments','allentries','reports','ratios','taskgroups'],
+  tech:['mystats','taskgroups'],
+  lead:['dashboard','controllerentry','productionimport','assignments','allentries','reports','ratios','taskgroups'],
   ctrl:['controllerentry','allentries','taskgroups'],
-  dev:['techs','parts','leaders','controllers','pwmgmt','ratios','taskgroups','system']
+  dev:['techs','parts','leaders','controllers','productionimport','pwmgmt','ratios','taskgroups','system']
 };
 const META={
   entry:{t:'Production Entry',d:'Log completed or scrap work'},
@@ -3382,16 +3742,18 @@ const META={
   parts:{t:'Parts & Inventory',d:''},
   leaders:{t:'Team Leaders',d:''},
   controllers:{t:'Production Controllers',d:''},
+  productionimport:{t:'Import Production Entries',d:'Import ComponentTATStatus Excel entries'},
   pwmgmt:{t:'Password Management',d:'Reset user passwords'},
   system:{t:'System Settings',d:''}
 };
-const ICONS={entry:'⊕',mystats:'📊',dashboard:'🖥',assignments:'📌',allentries:'📋',controllerentry:'⊕',reports:'📈',ratios:'⚖️',taskgroups:'🗂',techs:'👷',parts:'🔩',leaders:'👥',controllers:'🏭',pwmgmt:'🔐',system:'⚙️'};
+const ICONS={entry:'⊕',mystats:'📊',dashboard:'🖥',assignments:'📌',allentries:'📋',controllerentry:'⊕',reports:'📈',ratios:'⚖️',taskgroups:'🗂',techs:'👷',parts:'🔩',leaders:'👥',controllers:'🏭',productionimport:'⬆️',pwmgmt:'🔐',system:'⚙️'};
 
 function buildNav(){
   const nav=document.getElementById('sbnav');if(!nav)return;
   nav.innerHTML='<div class="sb-sec">Menu</div>'+(NAV[CR]||[]).map(p=>`<div class="nl" data-page="${p}" onclick="navTo('${p}');closeSidebar();"><span class="ni">${ICONS[p]||'•'}</span>${META[p]?.t||p}</div>`).join('');
 }
 window.navTo=function(page){
+  if(page==='entry' && CR==='tech'){page='mystats';}
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.nl').forEach(l=>l.classList.remove('on'));
   const pg=document.getElementById('pg-'+page);if(pg)pg.classList.add('on');
@@ -3409,6 +3771,7 @@ window.navTo=function(page){
   if(page==='parts')renderParts();
   if(page==='leaders')renderLeaders();
   if(page==='controllers')renderControllers();
+  if(page==='productionimport')renderProductionImportPage();
   if(page==='controllerentry'){populateLeaderEntryTechs();renderLeaderEntry();}
   if(page==='pwmgmt')renderPwMgmt();
   if(page==='system')renderSystem();
@@ -3472,15 +3835,15 @@ async function doLogin(){
     hideLoading();toast('Invalid credentials','error');return;
   }
   loginAttempts=0;document.getElementById('login-attempts').style.display='none';
-  CU=user;CR ='dev';
+  CU=user;CR=role;
   const avEl=document.getElementById('sb-av');
-  //if(avEl){avEl.innerHTML=avatarHtml(user.id,user.name,32);avEl.style.background='transparent';}
+  if(avEl){avEl.innerHTML=avatarHtml(user.id,user.name,32);avEl.style.background='transparent';}
   stxt('sb-un',user.name);stxt('sb-ur',role.toUpperCase());
   buildNav();
   document.getElementById('login').classList.remove('on');
   document.getElementById('app').classList.add('on');
   hideLoading();
-  if(CR==='tech'){navTo('entry');}
+  if(CR==='tech'){navTo('mystats');}
   else if(CR==='lead')navTo('dashboard');
   else if(CR==='ctrl')navTo('controllerentry');
   else navTo('techs');
